@@ -34,7 +34,8 @@ const submitReply = async () => {
   <div>
     <DeadlineBanner :appeal="appeal" />
 
-    <div v-if="canReply" class="mb-5">
+    <!-- A decided or concluded case no longer takes a defence; the banner above explains why -->
+    <div v-if="canReply && !appeal.caseClosed" class="mb-5">
       <label for="reply-body" class="block text-xs font-bold text-tra-ink mb-2">FILE STATEMENT OF DEFENCE</label>
       <textarea
         id="reply-body"

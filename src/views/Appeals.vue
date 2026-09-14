@@ -282,7 +282,7 @@ onMounted(async () => {
         </div>
         <div class="tra-field">
           <label for="f-from">Filed Between</label>
-          <div class="flex items-center gap-2">
+          <div class="tra-daterange">
             <input
               id="f-from"
               v-model="dateFrom"

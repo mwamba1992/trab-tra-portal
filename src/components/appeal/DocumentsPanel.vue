@@ -78,13 +78,13 @@ const upload = async () => {
     <form v-if="canUpload" class="upload-zone mb-4" novalidate @submit.prevent="upload">
       <div class="upload-title"><i class="pi pi-cloud-upload text-tra-yellow-dark" aria-hidden="true"></i> Upload document</div>
       <div class="upload-grid">
-        <div class="fld">
+        <div class="upload-field">
           <label for="doc-type">Document type</label>
           <select id="doc-type" v-model="docType" class="fld-sm" :disabled="uploading">
             <option v-for="t in TRA_DOCUMENT_TYPES" :key="t" :value="t">{{ humanize(t) }}</option>
           </select>
         </div>
-        <div class="fld">
+        <div class="upload-field">
           <label for="doc-file">File <span class="req" aria-hidden="true">*</span></label>
           <input
             id="doc-file"
@@ -102,7 +102,7 @@ const upload = async () => {
             {{ fileError || 'PDF, JPG, PNG or Word — max 10 MB' }}
           </div>
         </div>
-        <div class="fld span-2">
+        <div class="upload-field span-2">
           <label for="doc-remarks">Remarks <span class="opt">(optional)</span></label>
           <textarea
             id="doc-remarks"
@@ -218,7 +218,8 @@ const upload = async () => {
     grid-template-columns: 1fr;
   }
 }
-.fld label {
+/* Wrapper, not the shared .fld input style from styles.scss */
+.upload-field label {
   display: block;
   font-size: 12px;
   font-weight: 700;

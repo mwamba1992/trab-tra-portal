@@ -178,7 +178,7 @@ const describedBy = (name: keyof OfficerFormValues) => (errors.value[name] ? err
           type="tel"
           inputmode="tel"
           autocomplete="off"
-          placeholder="0712345678"
+          placeholder="0XXXXXXXXX"
           :aria-invalid="invalid('phone')"
           :aria-describedby="describedBy('phone')"
         />
