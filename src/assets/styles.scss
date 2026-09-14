@@ -1,0 +1,352 @@
+/* ============================================================
+   IDRAS · TRA Appeals Portal — enterprise theme
+   Black + gold on light grey. Dense, formal, records-oriented.
+   ============================================================ */
+
+:root {
+  --tra-yellow: #f5c400;
+  --tra-yellow-dark: #e0b200;
+  --tra-black: #141414;
+  --tra-ink: #1f2430;
+  --tra-bg: #ecedef;
+  --tra-surface: #ffffff;
+  --tra-border: #dadce0;
+  --tra-border-strong: #c4c7cc;
+  --tra-text: #1f2937;
+  --tra-muted: #6b7280;
+  --tra-success: #16a34a;
+  --tra-danger: #dc2626;
+  --tra-warning: #d97706;
+  --tra-radius: 8px;
+  --tra-shadow: 0 1px 2px rgba(20, 20, 20, 0.06), 0 1px 3px rgba(20, 20, 20, 0.04);
+  --tra-shadow-lg: 0 10px 30px rgba(20, 20, 20, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  background: var(--tra-bg);
+  color: var(--tra-text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { height: 100%; }
+
+/* ---------- Brand marks ---------- */
+.tra-emblem {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--tra-black);
+  color: var(--tra-yellow);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.tra-wordmark {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.4px;
+  color: var(--tra-black);
+  line-height: 1;
+}
+.tra-wordmark .badge {
+  background: var(--tra-yellow);
+  color: var(--tra-black);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+.tra-wordmark .sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tra-muted);
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+/* ---------- Top bar ---------- */
+.tra-topbar {
+  height: 60px;
+  background: var(--tra-surface);
+  border-bottom: 1px solid var(--tra-border);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.tra-modtabs { display: flex; align-items: center; gap: 8px; }
+.tra-modtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tra-text);
+  background: #f3f4f6;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.tra-modtab:hover { background: #e9eaec; }
+.tra-modtab.active {
+  background: var(--tra-yellow);
+  color: var(--tra-black);
+  box-shadow: inset 0 0 0 1px var(--tra-yellow-dark);
+}
+.tra-modtab.dark { background: var(--tra-black); color: #fff; }
+
+.tra-utility { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.tra-iconbtn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--tra-ink);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+.tra-iconbtn:hover { background: #f0f1f3; }
+.tra-iconbtn .dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--tra-yellow);
+  color: var(--tra-black);
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.tra-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-left: 8px;
+  border-left: 1px solid var(--tra-border);
+  margin-left: 4px;
+}
+.tra-user-chip .name { font-weight: 700; font-size: 13px; color: var(--tra-black); }
+.tra-user-chip .role { font-size: 11px; color: var(--tra-muted); }
+.tra-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--tra-black); color: var(--tra-yellow);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+}
+
+/* ---------- Shell ---------- */
+.tra-shell { display: flex; min-height: calc(100vh - 60px); }
+.tra-sidebar {
+  width: 268px;
+  flex-shrink: 0;
+  padding: 16px 14px;
+  background: transparent;
+}
+.tra-main { flex: 1; min-width: 0; padding: 20px 24px 40px; }
+
+/* ---------- Sidebar user card ---------- */
+.tra-usercard {
+  background: var(--tra-surface);
+  border: 1px solid var(--tra-border);
+  border-radius: var(--tra-radius);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--tra-shadow);
+}
+.tra-usercard .top { display: flex; align-items: center; justify-content: space-between; }
+.tra-usercard .who { font-weight: 800; font-size: 15px; color: var(--tra-black); text-transform: uppercase; letter-spacing: 0.2px; }
+.tra-usercard .meta { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.tra-usercard .idno { font-size: 12px; color: var(--tra-muted); font-weight: 600; }
+.tra-usercard .pill {
+  background: var(--tra-yellow); color: var(--tra-black);
+  font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
+}
+.tra-usercard .org { margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--tra-ink); letter-spacing: 0.3px; }
+
+/* ---------- Menu ---------- */
+.tra-menu-head {
+  background: var(--tra-black);
+  color: #fff;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tra-menu-head i { color: var(--tra-yellow); }
+.tra-menu {
+  background: var(--tra-surface);
+  border: 1px solid var(--tra-border);
+  border-radius: var(--tra-radius);
+  padding: 6px;
+  box-shadow: var(--tra-shadow);
+}
+.tra-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: var(--tra-text);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.14s ease;
+  position: relative;
+}
+.tra-menu-item i { font-size: 15px; color: var(--tra-muted); width: 18px; text-align: center; }
+.tra-menu-item:hover { background: #f5f6f7; }
+.tra-menu-item.active {
+  background: var(--tra-yellow);
+  color: var(--tra-black);
+  font-weight: 700;
+}
+.tra-menu-item.active i { color: var(--tra-black); }
+.tra-menu-item .count {
+  margin-left: auto;
+  background: #eceef1;
+  color: var(--tra-ink);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+.tra-menu-item.active .count { background: rgba(20,20,20,0.15); }
+
+/* ---------- Page header ---------- */
+.tra-breadcrumb { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--tra-muted); margin-bottom: 10px; }
+.tra-breadcrumb i { font-size: 11px; }
+.tra-pagehead { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.tra-pagetitle { display: flex; align-items: center; gap: 12px; }
+.tra-pagetitle h1 { font-size: 22px; font-weight: 800; color: var(--tra-black); margin: 0; letter-spacing: -0.3px; }
+.tra-pagetitle .star, .tra-pagetitle .bell { color: var(--tra-muted); cursor: pointer; }
+.tra-pagetitle .star { color: var(--tra-yellow-dark); }
+
+/* ---------- Cards ---------- */
+.tra-card {
+  background: var(--tra-surface);
+  border: 1px solid var(--tra-border);
+  border-radius: var(--tra-radius);
+  box-shadow: var(--tra-shadow);
+}
+.tra-card-pad { padding: 18px; }
+
+/* ---------- Filter grid ---------- */
+.tra-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+}
+@media (max-width: 768px) { .tra-filter-grid { grid-template-columns: 1fr; } }
+.tra-field { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 12px; }
+.tra-field > label { font-size: 12.5px; font-weight: 700; color: var(--tra-ink); }
+.tra-quickrange { display: flex; gap: 4px; flex-wrap: wrap; }
+.tra-chip {
+  border: 1px solid var(--tra-border-strong);
+  background: #fff;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--tra-ink);
+  cursor: pointer;
+}
+.tra-chip:hover { background: var(--tra-black); color: #fff; border-color: var(--tra-black); }
+
+/* ---------- Buttons ---------- */
+.tra-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 16px;
+  border-radius: 7px; font-weight: 700; font-size: 13px;
+  border: 1px solid transparent; cursor: pointer; transition: all 0.15s ease;
+}
+.tra-btn-dark { background: var(--tra-black); color: #fff; }
+.tra-btn-dark:hover { background: #000; }
+.tra-btn-gold { background: var(--tra-yellow); color: var(--tra-black); }
+.tra-btn-gold:hover { background: var(--tra-yellow-dark); }
+.tra-btn-ghost { background: #fff; color: var(--tra-ink); border-color: var(--tra-border-strong); }
+.tra-btn-ghost:hover { background: #f4f5f6; }
+
+/* ---------- Stat tiles ---------- */
+.tra-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px; }
+@media (max-width: 992px) { .tra-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px) { .tra-stats { grid-template-columns: 1fr; } }
+.tra-stat {
+  background: var(--tra-surface);
+  border: 1px solid var(--tra-border);
+  border-radius: var(--tra-radius);
+  padding: 16px 18px;
+  box-shadow: var(--tra-shadow);
+  position: relative;
+  overflow: hidden;
+}
+.tra-stat::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tra-yellow);
+}
+.tra-stat .label { font-size: 12px; color: var(--tra-muted); font-weight: 600; }
+.tra-stat .value { font-size: 28px; font-weight: 800; color: var(--tra-black); margin-top: 4px; letter-spacing: -0.5px; }
+.tra-stat .ico { position: absolute; right: 14px; top: 14px; width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; background: #f5f6f7; color: var(--tra-ink); }
+
+/* ---------- Badges ---------- */
+.tra-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+.tra-badge.green { background: #ecfdf5; color: var(--tra-success); }
+.tra-badge.red { background: #fef2f2; color: var(--tra-danger); }
+.tra-badge.amber { background: #fffbeb; color: var(--tra-warning); }
+.tra-badge.grey { background: #f1f2f4; color: var(--tra-ink); }
+.tra-badge.gold { background: var(--tra-yellow); color: var(--tra-black); }
+
+/* ---------- PrimeVue DataTable — enterprise grid ---------- */
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f4f5f6;
+  color: var(--tra-ink);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-color: var(--tra-border);
+  padding: 11px 14px;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: #eef0f2;
+  font-size: 13px;
+  padding: 11px 14px;
+}
+.p-datatable .p-datatable-tbody > tr:hover { background: #fcfbf3; }
+
+/* ---------- Misc ---------- */
+.tra-empty { text-align: center; padding: 40px 0; color: var(--tra-muted); }
+.tra-empty i { font-size: 30px; opacity: 0.4; display: block; margin-bottom: 10px; }
+.tra-link { color: var(--tra-ink); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--tra-yellow); cursor: pointer; }
+.tra-scroll-x { overflow-x: auto; }
