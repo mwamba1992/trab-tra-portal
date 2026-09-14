@@ -1,41 +1,25 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import http from '@/service/http';
+import {
+  accessToken,
+  refreshToken,
+  currentUser,
+  saveSession,
+  clearSession,
+  isTokenValid,
+  type ApiEnvelope,
+  type AuthTokensResponse,
+  type TraUser,
+} from '@/service/session';
 
-export interface TraUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string | null;
-  permissions: string[];
-}
+export type { TraUser } from '@/service/session';
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<TraUser | null>(loadUser());
-  // Reactive mirror of the stored token. localStorage itself is NOT reactive,
-  // so the computed below must depend on this ref to update after login/logout.
-  const accessToken = ref<string | null>(localStorage.getItem('tra_access_token'));
+  const user = currentUser;
 
-  function loadUser(): TraUser | null {
-    try {
-      const raw = localStorage.getItem('tra_user');
-      return raw ? (JSON.parse(raw) as TraUser) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  const isAuthenticated = computed(() => {
-    const token = accessToken.value;
-    if (!token) return false;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
-    }
-  });
+  /** Active if the access token is valid OR it can still be renewed with a valid refresh token. */
+  const isAuthenticated = computed<boolean>(() => isTokenValid(accessToken.value) || isTokenValid(refreshToken.value));
 
   const fullName = computed(() => (user.value ? `${user.value.firstName} ${user.value.lastName}`.trim() : ''));
   const initials = computed(() => {
@@ -45,26 +29,19 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'tra-admin');
 
   function can(permission: string): boolean {
-    if (!user.value) return false;
-    return user.value.permissions?.includes(permission) ?? false;
+    return user.value?.permissions?.includes(permission) ?? false;
   }
 
-  async function login(email: string, password: string) {
-    const res = await http.post('/auth/tra/login', { email, password });
-    const { accessToken: token, refreshToken, user: u } = res.data.data;
-    localStorage.setItem('tra_access_token', token);
-    localStorage.setItem('tra_refresh_token', refreshToken);
-    localStorage.setItem('tra_user', JSON.stringify(u));
-    accessToken.value = token; // triggers isAuthenticated to recompute
-    user.value = u;
-    return u;
+  async function login(email: string, password: string): Promise<TraUser> {
+    const res = await http.post<ApiEnvelope<AuthTokensResponse>>('/auth/tra/login', { email, password });
+    saveSession(res.data.data);
+    return res.data.data.user;
   }
 
-  function logout() {
-    localStorage.clear();
-    accessToken.value = null;
-    user.value = null;
-    window.location.href = '/login';
+  function logout(): void {
+    clearSession();
+    // Full reload on sign-out so no in-memory state from the previous officer survives.
+    window.location.assign('/login');
   }
 
   return { user, isAuthenticated, fullName, initials, isAdmin, can, login, logout };

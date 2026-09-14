@@ -1,50 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
+defineProps<{ sidebarOpen: boolean; sidebarId: string }>();
+defineEmits<{ (e: 'toggle-sidebar'): void }>();
+
 const auth = useAuthStore();
-const lang = ref<'EN' | 'SW'>('EN');
-const toggleLang = () => (lang.value = lang.value === 'EN' ? 'SW' : 'EN');
 </script>
 
 <template>
   <header class="tra-topbar">
-    <!-- Brand -->
-    <div class="flex items-center gap-3">
-      <div class="tra-emblem">TRA</div>
-      <div class="tra-wordmark">
+    <button
+      type="button"
+      class="tra-iconbtn tra-hamburger"
+      :aria-label="sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'"
+      :aria-expanded="sidebarOpen"
+      :aria-controls="sidebarId"
+      @click="$emit('toggle-sidebar')"
+    >
+      <i :class="sidebarOpen ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
+    </button>
+
+    <router-link to="/dashboard" class="tra-brand" aria-label="IDRAS Appeals home">
+      <span class="tra-emblem" aria-hidden="true">TRA</span>
+      <span class="tra-wordmark">
         IDRAS<span class="badge">APPEALS</span>
         <span class="sub">Tanzania Revenue Authority</span>
-      </div>
-    </div>
+      </span>
+    </router-link>
 
-    <!-- Module tabs -->
-    <nav class="tra-modtabs">
-      <button class="tra-modtab active"><i class="pi pi-briefcase"></i> Tax Appeals</button>
-      <button class="tra-modtab"><i class="pi pi-inbox"></i> Correspondence</button>
-    </nav>
+    <span class="tra-modtab"><i class="pi pi-briefcase" aria-hidden="true"></i> Tax Appeals</span>
 
-    <!-- Utility cluster -->
     <div class="tra-utility">
-      <button class="tra-iconbtn" v-tooltip.bottom="'Messages'">
-        <i class="pi pi-envelope"></i>
-        <span class="dot">2</span>
-      </button>
-      <button class="tra-iconbtn" v-tooltip.bottom="'Profile'"><i class="pi pi-user"></i></button>
-      <button class="tra-iconbtn" @click="toggleLang" v-tooltip.bottom="'Language'">
-        <i class="pi pi-globe"></i>
-      </button>
-      <span class="text-[11px] font-extrabold text-tra-ink -ml-1">{{ lang }}</span>
-      <button class="tra-iconbtn" v-tooltip.bottom="'Settings'"><i class="pi pi-sliders-h"></i></button>
-
       <div class="tra-user-chip">
-        <div class="tra-avatar">{{ auth.initials }}</div>
-        <div class="leading-tight">
+        <span class="tra-avatar" aria-hidden="true">{{ auth.initials }}</span>
+        <div class="who">
           <div class="name">{{ auth.fullName }}</div>
           <div class="role">{{ auth.isAdmin ? 'TRA Administrator' : 'TRA Officer' }}</div>
         </div>
-        <button class="tra-iconbtn" @click="auth.logout()" v-tooltip.bottom="'Sign out'">
-          <i class="pi pi-sign-out"></i>
+        <button v-tooltip.bottom="'Sign out'" type="button" class="tra-iconbtn" aria-label="Sign out" @click="auth.logout()">
+          <i class="pi pi-sign-out" aria-hidden="true"></i>
         </button>
       </div>
     </div>
