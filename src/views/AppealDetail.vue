@@ -13,6 +13,7 @@ import {
   type CaseAssignment,
   type CaseDocument,
   type CaseNote,
+  type Filing,
   type Officer,
   type Reply,
 } from '@/service/tra';
@@ -25,9 +26,10 @@ import OverviewPanel from '@/components/appeal/OverviewPanel.vue';
 import DefencePanel from '@/components/appeal/DefencePanel.vue';
 import DocumentsPanel from '@/components/appeal/DocumentsPanel.vue';
 import NotesPanel from '@/components/appeal/NotesPanel.vue';
+import FilingsPanel from '@/components/appeal/FilingsPanel.vue';
 
-type TabKey = 'overview' | 'reply' | 'documents' | 'notes';
-type SectionKey = 'parties' | 'replies' | 'documents' | 'notes' | 'officers' | 'assignments';
+type TabKey = 'overview' | 'reply' | 'filings' | 'documents' | 'notes';
+type SectionKey = 'parties' | 'replies' | 'filings' | 'documents' | 'notes' | 'officers' | 'assignments';
 
 const route = useRoute();
 const router = useRouter();
@@ -38,6 +40,7 @@ const id = route.params.id as string;
 const appeal = ref<AppealDetail | null>(null);
 const parties = ref<AppealParties>({ appellants: [], respondents: [] });
 const replies = ref<Reply[]>([]);
+const filings = ref<Filing[]>([]);
 const documents = ref<CaseDocument[]>([]);
 const notes = ref<CaseNote[]>([]);
 const officers = ref<Officer[]>([]);
@@ -45,7 +48,15 @@ const assignments = ref<CaseAssignment[]>([]);
 
 const loading = ref(true);
 const loadError = ref('');
-const errors = reactive<Record<SectionKey, string>>({ parties: '', replies: '', documents: '', notes: '', officers: '', assignments: '' });
+const errors = reactive<Record<SectionKey, string>>({
+  parties: '',
+  replies: '',
+  filings: '',
+  documents: '',
+  notes: '',
+  officers: '',
+  assignments: '',
+});
 const tab = ref<TabKey>('overview');
 
 const canReply = computed(() => auth.can('TRA File Reply'));
@@ -57,6 +68,7 @@ const tabs = computed(() => {
   const list: { key: TabKey; label: string; icon: string; count: number; badge: string }[] = [
     { key: 'overview', label: 'Overview', icon: 'pi-info-circle', count: 0, badge: 'grey' },
     { key: 'reply', label: 'Defence', icon: 'pi-pencil', count: replies.value.length, badge: 'gold' },
+    { key: 'filings', label: 'Objections & Appeal', icon: 'pi-flag', count: filings.value.length, badge: 'gold' },
   ];
   if (canDocs.value)
     list.push({ key: 'documents', label: 'Documents', icon: 'pi-paperclip', count: documents.value.length, badge: 'grey' });
@@ -67,6 +79,7 @@ const tabs = computed(() => {
 const fallback: Record<SectionKey, string> = {
   parties: 'Parties could not be loaded.',
   replies: 'Filed replies could not be loaded.',
+  filings: 'Objections and appeal notices could not be loaded.',
   documents: 'Documents could not be loaded.',
   notes: 'Internal notes could not be loaded.',
   officers: 'Officer list could not be loaded.',
@@ -80,6 +93,9 @@ const loaders: Record<SectionKey, () => Promise<void>> = {
   },
   replies: async () => {
     replies.value = await TraApi.replies(id);
+  },
+  filings: async () => {
+    filings.value = await TraApi.filings(id);
   },
   documents: async () => {
     documents.value = await TraCaseApi.documents(id);
@@ -96,7 +112,7 @@ const loaders: Record<SectionKey, () => Promise<void>> = {
 };
 
 const enabledSections = (): SectionKey[] => {
-  const keys: SectionKey[] = ['parties', 'replies'];
+  const keys: SectionKey[] = ['parties', 'replies', 'filings'];
   if (canDocs.value) keys.push('documents');
   if (canNotes.value) keys.push('notes');
   if (canAssign.value) keys.push('officers', 'assignments');
@@ -146,6 +162,11 @@ const onAssignmentChanged = (updated: Appeal) => {
 
 const onReplyFiled = () => {
   void reloadSection('replies');
+  void refreshAppeal();
+};
+
+const onFilingLodged = () => {
+  void reloadSection('filings');
   void refreshAppeal();
 };
 
@@ -255,6 +276,15 @@ onMounted(loadAll);
               :error="errors.replies"
               @filed="onReplyFiled"
               @retry="reloadSection('replies')"
+            />
+            <FilingsPanel
+              v-else-if="tab === 'filings'"
+              :appeal="appeal"
+              :filings="filings"
+              :can-file="canReply"
+              :error="errors.filings"
+              @filed="onFilingLodged"
+              @retry="reloadSection('filings')"
             />
             <DocumentsPanel
               v-else-if="tab === 'documents' && canDocs"

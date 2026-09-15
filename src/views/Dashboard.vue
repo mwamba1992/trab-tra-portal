@@ -4,9 +4,10 @@ import { useRouter } from 'vue-router';
 import Skeleton from 'primevue/skeleton';
 import { useToast } from 'primevue/usetoast';
 import PageHeader from '@/layout/PageHeader.vue';
-import { TraApi, type DashboardStats, type Appeal } from '@/service/tra';
+import { TraApi, type DashboardStats, type Appeal, type CaseDeadline } from '@/service/tra';
 import { useAuthStore } from '@/stores/auth';
 import { replyBadge, isInteractiveTarget } from '@/components/lists/replyStatus';
+import { DEADLINE_ICONS, DEADLINE_LABELS, deadlineChip } from '@/components/lists/deadlines';
 import { formatDate, humanize } from '@/utils/format';
 import { apiErrorMessage } from '@/utils/errors';
 
@@ -17,6 +18,23 @@ const stats = ref<DashboardStats>({});
 const recent = ref<Appeal[]>([]);
 const loading = ref(true);
 const error = ref('');
+const deadlines = ref<CaseDeadline[]>([]);
+const deadlinesLoading = ref(true);
+const deadlinesError = ref('');
+const DEADLINE_LIMIT = 8;
+
+// Loaded on its own so a failure here never blanks the rest of the dashboard.
+const loadDeadlines = async () => {
+  deadlinesLoading.value = true;
+  deadlinesError.value = '';
+  try {
+    deadlines.value = await TraApi.deadlines();
+  } catch (e) {
+    deadlinesError.value = apiErrorMessage(e, 'Deadlines could not be loaded.');
+  } finally {
+    deadlinesLoading.value = false;
+  }
+};
 
 interface Tile {
   label: string;
@@ -91,7 +109,10 @@ const openRow = (event: MouseEvent, id: string) => {
   router.push(`/appeals/${id}`);
 };
 
-onMounted(load);
+onMounted(() => {
+  void load();
+  void loadDeadlines();
+});
 </script>
 
 <template>
@@ -128,6 +149,45 @@ onMounted(load);
         </div>
       </router-link>
     </div>
+
+    <!-- Deadlines: overdue and due in the next 30 days -->
+    <section class="tra-card mb-4" aria-labelledby="deadlines-title">
+      <div class="tra-card-pad flex items-center justify-between gap-3 flex-wrap" style="border-bottom: 1px solid var(--tra-border)">
+        <div>
+          <h3 id="deadlines-title" class="font-extrabold text-tra-black text-base m-0">Upcoming Deadlines</h3>
+          <p class="text-xs text-tra-muted m-0 mt-1">Replies, appeals to the Tribunal and hearings in the next 30 days</p>
+        </div>
+        <span v-if="!deadlinesLoading && deadlines.length" class="tra-badge grey">{{ deadlines.length }}</span>
+      </div>
+      <div v-if="deadlinesLoading" class="tra-card-pad">
+        <Skeleton v-for="n in 3" :key="n" height="1.4rem" class="mb-3" />
+      </div>
+      <div v-else-if="deadlinesError" class="tra-card-pad flex items-center gap-3 flex-wrap" role="alert">
+        <span class="text-sm text-tra-muted">{{ deadlinesError }}</span>
+        <button type="button" class="tra-btn tra-btn-ghost ml-auto" @click="loadDeadlines">
+          <i class="pi pi-refresh" aria-hidden="true"></i> Retry
+        </button>
+      </div>
+      <ul v-else-if="deadlines.length" class="deadline-list">
+        <li v-for="d in deadlines.slice(0, DEADLINE_LIMIT)" :key="`${d.kind}-${d.appealId}-${d.dueDate}`" class="deadline-row">
+          <span class="deadline-icon" aria-hidden="true"><i class="pi" :class="DEADLINE_ICONS[d.kind]"></i></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <strong class="text-sm text-tra-black">{{ DEADLINE_LABELS[d.kind] }}</strong>
+              <router-link :to="`/appeals/${d.appealId}`" class="row-link text-sm">{{ d.appealNo || 'No number yet' }}</router-link>
+            </div>
+            <div class="text-xs text-tra-muted truncate">
+              {{ d.appellantName || '-' }}<template v-if="d.detail"> · {{ d.detail }}</template>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="tra-badge" :class="deadlineChip(d).cls">{{ deadlineChip(d).text }}</span>
+            <div class="text-xs text-tra-muted mt-1">{{ formatDate(d.dueDate) }}</div>
+          </div>
+        </li>
+      </ul>
+      <div v-else class="tra-empty"><i class="pi pi-check-circle" aria-hidden="true"></i>No deadlines in the next 30 days.</div>
+    </section>
 
     <!-- Recent appeals -->
     <div class="tra-card">
@@ -235,6 +295,31 @@ onMounted(load);
 }
 .tra-stat.danger .value {
   color: var(--tra-danger);
+}
+.deadline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.deadline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid #eef0f2;
+}
+.deadline-row:first-child {
+  border-top: 0;
+}
+.deadline-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #fff8db;
+  color: var(--tra-ink);
+  flex-shrink: 0;
 }
 .dash-error {
   border-color: var(--tra-danger);

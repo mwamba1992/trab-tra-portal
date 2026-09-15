@@ -8,7 +8,7 @@ vi.mock('@/service/tra', async (importOriginal) => {
   return {
     ...actual,
     TraCaseApi: { ...actual.TraCaseApi, appeal: vi.fn(), parties: vi.fn(), documents: vi.fn(), fileBlob: vi.fn() },
-    TraApi: { ...actual.TraApi, replies: vi.fn(), notes: vi.fn(), officers: vi.fn(), assignments: vi.fn() },
+    TraApi: { ...actual.TraApi, replies: vi.fn(), filings: vi.fn(), notes: vi.fn(), officers: vi.fn(), assignments: vi.fn() },
   };
 });
 
@@ -42,6 +42,7 @@ describe('AppealDetail', () => {
     vi.mocked(TraCaseApi.parties).mockReset().mockResolvedValue({ appellants: [], respondents: [] });
     vi.mocked(TraCaseApi.documents).mockReset().mockResolvedValue([]);
     vi.mocked(TraApi.replies).mockReset().mockResolvedValue([]);
+    vi.mocked(TraApi.filings).mockReset().mockResolvedValue([]);
     vi.mocked(TraApi.notes).mockReset().mockResolvedValue([]);
     vi.mocked(TraApi.officers).mockReset().mockResolvedValue({ items: [], total: 0 });
     vi.mocked(TraApi.assignments).mockReset().mockResolvedValue([]);

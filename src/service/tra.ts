@@ -131,10 +131,42 @@ export interface DecisionItem {
   judgementFile: string | null;
 }
 
+export type FilingType = 'PRELIMINARY_OBJECTION' | 'TRIBUNAL_APPEAL_INTENT';
+
+export interface Filing {
+  id: string;
+  appealId: string;
+  type: FilingType;
+  grounds: string;
+  status: string;
+  filedByName: string | null;
+  createdAt: string;
+}
+
+export type DeadlineKind = 'REPLY' | 'HEARING' | 'TRIBUNAL_APPEAL';
+
+export interface CaseDeadline {
+  kind: DeadlineKind;
+  appealId: string;
+  appealNo: string | null;
+  appellantName: string | null;
+  /** YYYY-MM-DD */
+  dueDate: string;
+  /** 0 on the day, negative once past. */
+  daysRemaining: number;
+  overdue: boolean;
+  detail: string | null;
+}
+
 const unwrap = <T>(p: Promise<{ data: { data: T } }>) => p.then((r) => r.data.data);
 
 export const TraApi = {
   dashboard: () => unwrap<DashboardStats>(http.get('/tra/dashboard')),
+  deadlines: () => unwrap<CaseDeadline[]>(http.get('/tra/deadlines')),
+
+  filings: (id: string) => unwrap<Filing[]>(http.get(`/tra/appeals/${id}/filings`)),
+  lodgeFiling: (id: string, type: FilingType, grounds: string) =>
+    unwrap<Filing>(http.post(`/tra/appeals/${id}/filings`, { type, grounds })),
 
   appeals: (q: AppealQuery = {}) =>
     unwrap<Paginated<Appeal>>(
@@ -212,6 +244,11 @@ export interface AppealDetail extends Appeal {
   /** UUID file name, downloadable through GET /uploads/:fileName. */
   judgementFile?: string | null;
   expectedDecisionDate?: string | null;
+  /** Last day to give notice of appeal to the Tribunal (decided appeals only). */
+  tribunalDueDate?: string | null;
+  tribunalDaysRemaining?: number | null;
+  tribunalWindowLapsed?: boolean;
+  tribunalIntentFiledAt?: string | null;
 }
 
 export interface PartyAppellant {
