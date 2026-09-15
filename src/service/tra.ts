@@ -170,7 +170,26 @@ export interface SummonsItem {
   summons: { startDate: string; time: string | null; venue: string | null; status: string; judge?: { name: string } | null } | null;
 }
 
+export type DecisionActionType = 'REFUND_ISSUED' | 'ASSESSMENT_REVISED' | 'TAX_ENFORCED' | 'APPEAL_TO_TRIBUNAL' | 'NO_ACTION_REQUIRED';
+
+/** What TRA did about a Board decision. */
+export interface DecisionActionRecord {
+  id: string;
+  action: DecisionActionType;
+  details: string | null;
+  actionDate: string | null;
+  recordedByName: string | null;
+  updatedAt: string;
+}
+
+export interface DecisionActionInput {
+  action: DecisionActionType;
+  details?: string;
+  actionDate?: string;
+}
+
 export interface DecisionItem {
+  decisionAction?: DecisionActionRecord | null;
   id: string;
   appealNo: string | null;
   appellantName: string;
@@ -237,6 +256,8 @@ const unwrap = <T>(p: Promise<{ data: { data: T } }>) => p.then((r) => r.data.da
 export const TraApi = {
   dashboard: () => unwrap<DashboardStats>(http.get('/tra/dashboard')),
   deadlines: () => unwrap<CaseDeadline[]>(http.get('/tra/deadlines')),
+  setDecisionAction: (appealId: string, input: DecisionActionInput) =>
+    unwrap<DecisionActionRecord>(http.put(`/tra/appeals/${appealId}/decision-action`, input)),
   respondToHearing: (summonsAppealId: string, input: HearingResponseInput) =>
     unwrap<HearingResponse>(http.put(`/tra/summons/${summonsAppealId}/response`, input)),
   setDisputeNo: (id: string, disputeNo: string) => unwrap<AppealDetail>(http.put(`/tra/appeals/${id}/dispute-no`, { disputeNo })),
@@ -336,6 +357,8 @@ export interface AppealDetail extends Appeal {
   tribunalDaysRemaining?: number | null;
   tribunalWindowLapsed?: boolean;
   tribunalIntentFiledAt?: string | null;
+  /** What TRA recorded doing about the decision (decided appeals only). */
+  decisionAction?: DecisionActionRecord | null;
 }
 
 export interface PartyAppellant {
