@@ -202,7 +202,26 @@ export interface DecisionItem {
   judgementFile: string | null;
 }
 
-export type FilingType = 'PRELIMINARY_OBJECTION' | 'TRIBUNAL_APPEAL_INTENT';
+export type FilingType = 'PRELIMINARY_OBJECTION' | 'SETTLEMENT_CONSENT' | 'WITHDRAWAL_CONSENT' | 'TRIBUNAL_APPEAL_INTENT';
+
+export interface CurrencyAmount {
+  currency: string;
+  amount: number;
+}
+
+/** Indicative deposit figures: TRAB holds the filing-fee bill, not the statutory deposit. */
+export interface DepositInfo {
+  disputed: CurrencyAmount[];
+  oneThird: CurrencyAmount[];
+  bill: {
+    billReference: string;
+    controlNumber: string | null;
+    billedAmount: number;
+    paidAmount: number;
+    currency: string;
+    billPaid: boolean;
+  } | null;
+}
 
 export interface Filing {
   id: string;
@@ -359,6 +378,7 @@ export interface AppealDetail extends Appeal {
   tribunalIntentFiledAt?: string | null;
   /** What TRA recorded doing about the decision (decided appeals only). */
   decisionAction?: DecisionActionRecord | null;
+  deposit?: DepositInfo | null;
 }
 
 export interface PartyAppellant {

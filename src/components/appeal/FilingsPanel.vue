@@ -16,8 +16,32 @@ const filing = ref(false);
 
 const TYPE_LABELS: Record<FilingType, string> = {
   PRELIMINARY_OBJECTION: 'Preliminary objection',
+  SETTLEMENT_CONSENT: 'Consent to settlement',
+  WITHDRAWAL_CONSENT: 'Consent to withdrawal',
   TRIBUNAL_APPEAL_INTENT: 'Intention to appeal to the Tribunal',
 };
+
+// While the case is live TRA chooses what to lodge; after a decision only the Tribunal notice remains.
+const OPEN_CASE_TYPES: { value: FilingType; label: string; hint: string; placeholder: string }[] = [
+  {
+    value: 'PRELIMINARY_OBJECTION',
+    label: 'Preliminary objection',
+    hint: 'Points of law argued before the merits, such as time bar, jurisdiction, deposit not paid or defective pleadings.',
+    placeholder: 'Grounds of the preliminary objection…',
+  },
+  {
+    value: 'SETTLEMENT_CONSENT',
+    label: 'Consent to settlement',
+    hint: 'Terms TRA has agreed with the appellant, for the Board to record.',
+    placeholder: 'Terms of the settlement…',
+  },
+  {
+    value: 'WITHDRAWAL_CONSENT',
+    label: 'Consent to withdrawal',
+    hint: "TRA does not oppose the appellant's withdrawal of the appeal.",
+    placeholder: 'Any condition attached, such as costs…',
+  },
+];
 
 const REVIEW = {
   PENDING: { cls: 'amber', text: 'Awaiting Board review' },
@@ -28,8 +52,10 @@ const review = (f: Filing) => REVIEW[f.reviewStatus ?? 'PENDING'];
 
 const decided = computed(() => !!props.appeal.outcomeOfDecision && props.appeal.outcomeOfDecision !== 'NO DECISION');
 const intentFiled = computed(() => !!props.appeal.tribunalIntentFiledAt);
-// Before the decision TRA raises objections; after it, TRA may give notice of appeal.
-const formType = computed<FilingType>(() => (decided.value ? 'TRIBUNAL_APPEAL_INTENT' : 'PRELIMINARY_OBJECTION'));
+// Before the decision TRA picks what to lodge; after it, only the Tribunal notice remains.
+const openType = ref<FilingType>('PRELIMINARY_OBJECTION');
+const formType = computed<FilingType>(() => (decided.value ? 'TRIBUNAL_APPEAL_INTENT' : openType.value));
+const openChoice = computed(() => OPEN_CASE_TYPES.find((t) => t.value === openType.value) ?? OPEN_CASE_TYPES[0]);
 const showForm = computed(() => props.canFile && !(decided.value && intentFiled.value));
 
 // Tribunal window banner, decided appeals only.
@@ -88,28 +114,31 @@ const submit = async () => {
     </div>
 
     <div v-if="showForm" class="mb-5">
+      <fieldset v-if="!decided" class="types">
+        <legend class="block text-xs font-bold text-tra-ink mb-1">WHAT IS TRA LODGING?</legend>
+        <label v-for="t in OPEN_CASE_TYPES" :key="t.value" class="type-choice" :class="{ active: openType === t.value }">
+          <input v-model="openType" type="radio" name="filing-type" :value="t.value" />
+          <span>{{ t.label }}</span>
+        </label>
+      </fieldset>
       <label for="filing-grounds" class="block text-xs font-bold text-tra-ink mb-1">
-        {{ decided ? 'LODGE INTENTION TO APPEAL TO THE TRIBUNAL' : 'RAISE A PRELIMINARY OBJECTION' }}
+        {{ decided ? 'LODGE INTENTION TO APPEAL TO THE TRIBUNAL' : 'GROUNDS' }}
       </label>
       <p class="text-xs text-tra-muted mt-0 mb-2">
-        {{
-          decided
-            ? 'State the grounds on which TRA intends to challenge the Board’s decision.'
-            : 'Points of law argued before the merits, such as time bar, jurisdiction, deposit not paid or defective pleadings.'
-        }}
+        {{ decided ? 'State the grounds on which TRA intends to challenge the Board’s decision.' : openChoice.hint }}
       </p>
       <textarea
         id="filing-grounds"
         v-model="grounds"
         rows="5"
         class="fld-area"
-        :placeholder="decided ? 'Grounds of the intended appeal…' : 'Grounds of the preliminary objection…'"
+        :placeholder="decided ? 'Grounds of the intended appeal…' : openChoice.placeholder"
         :disabled="filing"
       ></textarea>
       <div class="flex justify-end mt-2">
         <button type="button" class="tra-btn tra-btn-dark" :disabled="filing || !grounds.trim()" @click="submit">
           <i class="pi" :class="filing ? 'pi-spin pi-spinner' : 'pi-send'" aria-hidden="true"></i>
-          {{ decided ? 'Lodge Intention to Appeal' : 'Lodge Objection' }}
+          {{ decided ? 'Lodge Intention to Appeal' : `Lodge ${openChoice.label}` }}
         </button>
       </div>
     </div>
@@ -120,7 +149,7 @@ const submit = async () => {
       <article v-for="f in filings" :key="f.id" class="filing-card">
         <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="tra-badge" :class="f.type === 'PRELIMINARY_OBJECTION' ? 'gold' : 'grey'">{{ TYPE_LABELS[f.type] }}</span>
+            <span class="tra-badge" :class="f.type === 'TRIBUNAL_APPEAL_INTENT' ? 'grey' : 'gold'">{{ TYPE_LABELS[f.type] }}</span>
             <strong class="text-sm text-tra-black">{{ f.filedByName || 'TRA Officer' }}</strong>
             <span class="tra-badge" :class="review(f).cls">{{ review(f).text }}</span>
           </div>
@@ -170,6 +199,31 @@ const submit = async () => {
   background: #fef3f2;
   color: #b42318;
   border-color: #fecdca;
+}
+.types {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.type-choice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 1px solid var(--tra-border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.type-choice.active {
+  border-color: var(--tra-yellow-dark);
+  background: #fffaeb;
+}
+.type-choice input:focus-visible {
+  outline: 2px solid var(--tra-yellow-dark);
+  outline-offset: 2px;
 }
 .sec-head {
   font-size: 12px;
