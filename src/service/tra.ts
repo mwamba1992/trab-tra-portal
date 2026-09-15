@@ -141,7 +141,28 @@ export interface AppealQuery {
   reply?: 'filed' | 'pending';
 }
 
+export type Attendance = 'ATTENDING' | 'NOT_ATTENDING' | 'ADJOURNMENT_REQUESTED';
+
+export interface HearingResponse {
+  id: string;
+  attendance: Attendance;
+  appearingCounsel: string | null;
+  witnesses: string | null;
+  remarks: string | null;
+  respondedByName: string | null;
+  updatedAt: string;
+}
+
+export interface HearingResponseInput {
+  attendance: Attendance;
+  appearingCounsel?: string;
+  witnesses?: string;
+  remarks?: string;
+}
+
 export interface SummonsItem {
+  /** TRA's saved response to this summons, if any. */
+  response?: HearingResponse | null;
   summonsAppealId: string;
   appealId: string;
   appealNo: string | null;
@@ -216,6 +237,8 @@ const unwrap = <T>(p: Promise<{ data: { data: T } }>) => p.then((r) => r.data.da
 export const TraApi = {
   dashboard: () => unwrap<DashboardStats>(http.get('/tra/dashboard')),
   deadlines: () => unwrap<CaseDeadline[]>(http.get('/tra/deadlines')),
+  respondToHearing: (summonsAppealId: string, input: HearingResponseInput) =>
+    unwrap<HearingResponse>(http.put(`/tra/summons/${summonsAppealId}/response`, input)),
   setDisputeNo: (id: string, disputeNo: string) => unwrap<AppealDetail>(http.put(`/tra/appeals/${id}/dispute-no`, { disputeNo })),
   applications: (page = 1, size = 10, search = '') =>
     unwrap<Paginated<ApplicationItem>>(
