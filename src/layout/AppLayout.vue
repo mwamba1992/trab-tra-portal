@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import ConfirmDialog from 'primevue/confirmdialog';
 import AppTopbar from './AppTopbar.vue';
 import AppSidebar from './AppSidebar.vue';
+import FilePreviewDialog from '@/components/files/FilePreviewDialog.vue';
 
 const SIDEBAR_ID = 'tra-sidebar';
 const route = useRoute();
@@ -57,5 +58,7 @@ onBeforeUnmount(() => {
       </main>
     </div>
     <ConfirmDialog :style="{ width: 'min(440px, calc(100vw - 32px))' }" />
+    <!-- Shared document preview: judgements and case documents open here instead of downloading -->
+    <FilePreviewDialog />
   </div>
 </template>

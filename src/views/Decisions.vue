@@ -2,15 +2,13 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Column from 'primevue/column';
-import { useToast } from 'primevue/usetoast';
 import PageHeader from '@/layout/PageHeader.vue';
 import TraTable from '@/components/TraTable.vue';
-import { TraApi, TraCaseApi, type DecisionItem } from '@/service/tra';
+import { TraApi, type DecisionItem } from '@/service/tra';
 import { formatDate, humanize } from '@/utils/format';
-import { apiErrorMessage } from '@/utils/errors';
+import { openPreview } from '@/components/files/filePreview';
 
 const router = useRouter();
-const toast = useToast();
 
 const wonClass = (w: string | null | undefined) => (/tra|commissioner|respondent/i.test(w || '') ? 'green' : 'red');
 const openAppeal = (row: object) => router.push(`/appeals/${(row as DecisionItem).id}`);
@@ -22,31 +20,17 @@ const toggleSummary = (id: string) => {
   expanded.value = expanded.value.includes(id) ? expanded.value.filter((x) => x !== id) : [...expanded.value, id];
 };
 
-// The upload route needs the JWT, so fetch the judgement as a Blob and save it.
-const downloading = ref<string | null>(null);
-const downloadJudgement = async (d: DecisionItem) => {
+// Opens the judgement in the portal's preview window; download and print are available there.
+const viewJudgement = (d: DecisionItem) => {
   if (!d.judgementFile) return;
   const fileName = d.judgementFile.split('/').pop() || d.judgementFile;
   const ext = fileName.includes('.') ? fileName.slice(fileName.lastIndexOf('.')) : '.pdf';
-  downloading.value = d.id;
-  try {
-    const blob = await TraCaseApi.fileBlob(fileName);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `judgement-${(d.appealNo || d.id).replace(/[^\w.-]+/g, '-')}${ext}`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Download failed',
-      detail: apiErrorMessage(e, 'Could not download the judgement.'),
-      life: 5000,
-    });
-  } finally {
-    downloading.value = null;
-  }
+  const label = d.appealNo || d.appellantName;
+  openPreview({
+    fileName,
+    title: `Judgement · ${label}`,
+    downloadName: `judgement-${label.replace(/[^\w.-]+/g, '-')}${ext}`,
+  });
 };
 </script>
 
@@ -109,11 +93,10 @@ const downloadJudgement = async (d: DecisionItem) => {
               v-if="data.judgementFile"
               type="button"
               class="tra-btn tra-btn-ghost judgement-btn"
-              :disabled="downloading === data.id"
-              :aria-label="`Download judgement for ${data.appealNo || data.appellantName}`"
-              @click="downloadJudgement(data)"
+              :aria-label="`View judgement for ${data.appealNo || data.appellantName}`"
+              @click="viewJudgement(data)"
             >
-              <i class="pi" :class="downloading === data.id ? 'pi-spin pi-spinner' : 'pi-file-pdf'"></i> Judgement
+              <i class="pi pi-file-pdf" aria-hidden="true"></i> View judgement
             </button>
             <span v-else class="text-tra-muted">Not uploaded</span>
           </template>

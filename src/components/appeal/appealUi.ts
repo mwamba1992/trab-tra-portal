@@ -3,6 +3,7 @@ import { useToast } from 'primevue/usetoast';
 import { TraCaseApi } from '@/service/tra';
 import { apiErrorMessage } from '@/utils/errors';
 import { formatDate } from '@/utils/format';
+import { openPreview } from '@/components/files/filePreview';
 
 /** "14 Sep 2026, 09:30" — formatDate plus a local time. */
 export function formatDateTime(value: string | null | undefined): string {
@@ -37,6 +38,11 @@ export function useStoredFile() {
   const busy = ref<string | null>(null);
 
   const openFile = async (fileName: string, mode: 'view' | 'download', displayName?: string | null) => {
+    // Viewing opens the in-portal preview (PDFs and images display inline, with print and download).
+    if (mode === 'view') {
+      openPreview({ fileName, title: displayName || 'Document', downloadName: displayName });
+      return;
+    }
     busy.value = `${mode}:${fileName}`;
     try {
       const blob = await TraCaseApi.fileBlob(fileName);
