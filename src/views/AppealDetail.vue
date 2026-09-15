@@ -27,6 +27,7 @@ import DefencePanel from '@/components/appeal/DefencePanel.vue';
 import DocumentsPanel from '@/components/appeal/DocumentsPanel.vue';
 import NotesPanel from '@/components/appeal/NotesPanel.vue';
 import FilingsPanel from '@/components/appeal/FilingsPanel.vue';
+import DisputeNumberField from '@/components/appeal/DisputeNumberField.vue';
 
 type TabKey = 'overview' | 'reply' | 'filings' | 'documents' | 'notes';
 type SectionKey = 'parties' | 'replies' | 'filings' | 'documents' | 'notes' | 'officers' | 'assignments';
@@ -226,6 +227,7 @@ onMounted(loadAll);
       <div class="detail-grid">
         <aside class="tra-card tra-card-pad h-fit" aria-label="Case summary">
           <CaseSummary :appeal="appeal" :parties="parties" :parties-error="errors.parties" @retry-parties="reloadSection('parties')" />
+          <DisputeNumberField :appeal="appeal" :can-edit="canNotes" @saved="(updated) => (appeal = { ...appeal, ...updated })" />
           <CaseAssignmentPanel
             :appeal="appeal"
             :can-assign="canAssign"

@@ -14,6 +14,8 @@ const KNOWN_ROUTES: Record<string, string> = {
   Dashboard: '/dashboard',
   Appeals: '/appeals',
   'Appeals Against TRA': '/appeals',
+  Notices: '/notices',
+  Applications: '/applications',
   Summons: '/summons',
   Decisions: '/decisions',
   Officers: '/officers',

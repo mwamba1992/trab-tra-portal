@@ -19,6 +19,13 @@ const TYPE_LABELS: Record<FilingType, string> = {
   TRIBUNAL_APPEAL_INTENT: 'Intention to appeal to the Tribunal',
 };
 
+const REVIEW = {
+  PENDING: { cls: 'amber', text: 'Awaiting Board review' },
+  ACCEPTED: { cls: 'green', text: 'Accepted by the Board' },
+  REJECTED: { cls: 'red', text: 'Rejected by the Board' },
+} as const;
+const review = (f: Filing) => REVIEW[f.reviewStatus ?? 'PENDING'];
+
 const decided = computed(() => !!props.appeal.outcomeOfDecision && props.appeal.outcomeOfDecision !== 'NO DECISION');
 const intentFiled = computed(() => !!props.appeal.tribunalIntentFiledAt);
 // Before the decision TRA raises objections; after it, TRA may give notice of appeal.
@@ -115,10 +122,15 @@ const submit = async () => {
           <div class="flex items-center gap-2 flex-wrap">
             <span class="tra-badge" :class="f.type === 'PRELIMINARY_OBJECTION' ? 'gold' : 'grey'">{{ TYPE_LABELS[f.type] }}</span>
             <strong class="text-sm text-tra-black">{{ f.filedByName || 'TRA Officer' }}</strong>
+            <span class="tra-badge" :class="review(f).cls">{{ review(f).text }}</span>
           </div>
           <span class="text-xs text-tra-muted">{{ formatDateTime(f.createdAt) }}</span>
         </div>
         <p class="text-sm text-tra-text whitespace-pre-wrap m-0">{{ f.grounds }}</p>
+        <p v-if="f.reviewStatus && f.reviewStatus !== 'PENDING'" class="review-note">
+          {{ f.reviewedByName || 'Registry' }}<template v-if="f.reviewedAt"> · {{ formatDateTime(f.reviewedAt) }}</template
+          ><template v-if="f.reviewRemarks">: {{ f.reviewRemarks }}</template>
+        </p>
       </article>
       <div v-if="!filings.length" class="tra-empty">
         <i class="pi pi-flag" aria-hidden="true"></i>No objections or appeal notices lodged.
@@ -166,6 +178,14 @@ const submit = async () => {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin: 0 0 8px;
+}
+.review-note {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--tra-border);
+  font-size: 12px;
+  color: var(--tra-muted);
+  white-space: pre-wrap;
 }
 .filing-card {
   border: 1px solid var(--tra-border);

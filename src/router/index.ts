@@ -17,8 +17,10 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', redirect: '/dashboard' },
       { path: 'dashboard', name: 'Dashboard', component: () => import('@/views/Dashboard.vue') },
+      { path: 'notices', name: 'Notices', component: () => import('@/views/Notices.vue') },
       { path: 'appeals', name: 'Appeals', component: () => import('@/views/Appeals.vue') },
       { path: 'appeals/:id', name: 'AppealDetail', component: () => import('@/views/AppealDetail.vue') },
+      { path: 'applications', name: 'Applications', component: () => import('@/views/Applications.vue') },
       { path: 'summons', name: 'Summons', component: () => import('@/views/Summons.vue') },
       { path: 'decisions', name: 'Decisions', component: () => import('@/views/Decisions.vue') },
       { path: 'officers', name: 'Officers', component: () => import('@/views/Officers.vue'), meta: { permission: 'TRA Manage Users' } },

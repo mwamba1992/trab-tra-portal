@@ -15,7 +15,9 @@ interface MenuItem {
 
 const ALL_ITEMS: MenuItem[] = [
   { label: 'Dashboard', icon: 'pi pi-th-large', to: '/dashboard' },
+  { label: 'Notices of Appeal', icon: 'pi pi-file', to: '/notices' },
   { label: 'Appeals Against TRA', icon: 'pi pi-briefcase', to: '/appeals' },
+  { label: 'Applications', icon: 'pi pi-file-check', to: '/applications' },
   { label: 'Summons', icon: 'pi pi-calendar', to: '/summons' },
   { label: 'Decisions', icon: 'pi pi-verified', to: '/decisions' },
   { label: 'TRA Officers', icon: 'pi pi-users', to: '/officers', permission: 'TRA Manage Users' },

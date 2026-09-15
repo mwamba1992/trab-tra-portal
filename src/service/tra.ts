@@ -48,6 +48,37 @@ export interface Appeal {
   /** Decided / hearing concluded: a reply is no longer expected. */
   caseClosed?: boolean;
   replyStatus?: ReplyState;
+  /** TRA's own dispute (objection) number linked to this appeal. */
+  disputeNo?: string | null;
+}
+
+export interface ApplicationItem {
+  id: string;
+  applicationNo: string | null;
+  applicationType: string;
+  applicationCategory: string;
+  /** Appellant, or Respondent when TRA itself applied. */
+  applicantType: string;
+  applicantName: string;
+  natureOfApplication: string | null;
+  taxType: string | null;
+  dateOfFiling: string;
+  status: string;
+  decidedDate: string | null;
+  outcome: string | null;
+  wonBy: string | null;
+  summaryOfDecision: string | null;
+  appealId: string | null;
+  appealNo: string | null;
+  decided: boolean;
+  responseCount: number;
+}
+
+export interface ApplicationResponse {
+  id: string;
+  body: string;
+  filedByName: string | null;
+  createdAt: string;
 }
 
 export type ReplyState = 'REPLIED' | 'NOT_REQUIRED' | 'OVERDUE' | 'PENDING';
@@ -141,6 +172,28 @@ export interface Filing {
   status: string;
   filedByName: string | null;
   createdAt: string;
+  /** The Board's review of the filing. */
+  reviewStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  reviewedByName?: string | null;
+  reviewedAt?: string | null;
+  reviewRemarks?: string | null;
+}
+
+export interface NoticeItem {
+  id: string;
+  noticeNo: string | null;
+  appellantName: string;
+  description: string | null;
+  loggedAt: string;
+  dateOfTaxationDecision: string | null;
+  dateOfServiceDecision: string | null;
+  region: string | null;
+  additionalRespondent: string | null;
+  paymentStatus: string;
+  isExempted: boolean;
+  /** Set once the statement of appeal has been lodged. */
+  appealId: string | null;
+  appealNo: string | null;
 }
 
 export type DeadlineKind = 'REPLY' | 'HEARING' | 'TRIBUNAL_APPEAL';
@@ -163,6 +216,17 @@ const unwrap = <T>(p: Promise<{ data: { data: T } }>) => p.then((r) => r.data.da
 export const TraApi = {
   dashboard: () => unwrap<DashboardStats>(http.get('/tra/dashboard')),
   deadlines: () => unwrap<CaseDeadline[]>(http.get('/tra/deadlines')),
+  setDisputeNo: (id: string, disputeNo: string) => unwrap<AppealDetail>(http.put(`/tra/appeals/${id}/dispute-no`, { disputeNo })),
+  applications: (page = 1, size = 10, search = '') =>
+    unwrap<Paginated<ApplicationItem>>(
+      http.get('/tra/applications', { params: { page, size, ...(search.trim() ? { search: search.trim() } : {}) } }),
+    ),
+  applicationResponses: (id: string) => unwrap<ApplicationResponse[]>(http.get(`/tra/applications/${id}/responses`)),
+  respondToApplication: (id: string, body: string) => unwrap<ApplicationResponse>(http.post(`/tra/applications/${id}/responses`, { body })),
+  notices: (page = 1, size = 10, search = '') =>
+    unwrap<Paginated<NoticeItem>>(
+      http.get('/tra/notices', { params: { page, size, ...(search.trim() ? { search: search.trim() } : {}) } }),
+    ),
 
   filings: (id: string) => unwrap<Filing[]>(http.get(`/tra/appeals/${id}/filings`)),
   lodgeFiling: (id: string, type: FilingType, grounds: string) =>
