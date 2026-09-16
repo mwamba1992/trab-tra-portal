@@ -413,6 +413,40 @@ export interface CaseDocument extends CaseDoc {
 }
 
 /** Document types TRA may attach (backend DocumentType enum minus JUDGEMENT, which the Board issues). */
+// ─── Written submissions (backend hearings/submissions.service.ts) ───
+
+/** Submissions close three days before the hearing sits. */
+export const SUBMISSION_CUTOFF_DAYS = 3;
+export const SUBMISSION_STAGES = ['SUBMISSION_IN_CHIEF', 'REPLY', 'REJOINDER'] as const;
+export type SubmissionStage = (typeof SUBMISSION_STAGES)[number];
+
+export const SUBMISSION_STAGE_LABELS: Record<SubmissionStage, string> = {
+  SUBMISSION_IN_CHIEF: 'Submission in chief',
+  REPLY: 'Reply',
+  REJOINDER: 'Rejoinder',
+};
+
+export interface WrittenSubmission {
+  id: string;
+  appealId: string;
+  hearingDate: string | null;
+  party: 'APPELLANT' | 'RESPONDENT';
+  stage: SubmissionStage;
+  body: string | null;
+  fileName: string | null;
+  originalName: string | null;
+  filedByName: string | null;
+  createdAt: string;
+}
+
+export interface SubmissionWindow {
+  hearingDate: string | null;
+  venue: string | null;
+  deadline: string | null;
+  open: boolean;
+  submissions: WrittenSubmission[];
+}
+
 export const TRA_DOCUMENT_TYPES = ['EVIDENCE', 'SUPPORTING', 'ANNEXTURE', 'OTHER'] as const;
 export type TraDocumentType = (typeof TRA_DOCUMENT_TYPES)[number];
 /** Mirrors backend common/upload.config.ts. */
@@ -429,6 +463,15 @@ export const TraCaseApi = {
     fd.append('documentType', documentType);
     if (remarks.trim()) fd.append('remarks', remarks.trim());
     return unwrap<CaseDocument>(http.post(`/tra/appeals/${id}/documents`, fd, { timeout: 120000 }));
+  },
+  /** Both sides' written submissions for the next hearing, with the closing day. */
+  submissions: (id: string) => unwrap<SubmissionWindow>(http.get(`/tra/appeals/${id}/submissions`)),
+  fileSubmission: (id: string, input: { stage: SubmissionStage; body?: string; file?: File | null }) => {
+    const fd = new FormData();
+    fd.append('stage', input.stage);
+    if (input.body?.trim()) fd.append('body', input.body.trim());
+    if (input.file) fd.append('file', input.file);
+    return unwrap<WrittenSubmission>(http.post(`/tra/appeals/${id}/submissions`, fd, { timeout: 120000 }));
   },
   /** Stored upload as a Blob (the download route needs the JWT, so plain links cannot be used). */
   fileBlob: (fileName: string) =>

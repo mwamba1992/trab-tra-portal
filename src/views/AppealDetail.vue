@@ -27,10 +27,11 @@ import DefencePanel from '@/components/appeal/DefencePanel.vue';
 import DocumentsPanel from '@/components/appeal/DocumentsPanel.vue';
 import NotesPanel from '@/components/appeal/NotesPanel.vue';
 import FilingsPanel from '@/components/appeal/FilingsPanel.vue';
+import SubmissionsPanel from '@/components/appeal/SubmissionsPanel.vue';
 import DisputeNumberField from '@/components/appeal/DisputeNumberField.vue';
 import DepositPanel from '@/components/appeal/DepositPanel.vue';
 
-type TabKey = 'overview' | 'reply' | 'filings' | 'documents' | 'notes';
+type TabKey = 'overview' | 'reply' | 'submissions' | 'filings' | 'documents' | 'notes';
 type SectionKey = 'parties' | 'replies' | 'filings' | 'documents' | 'notes' | 'officers' | 'assignments';
 
 const route = useRoute();
@@ -70,6 +71,7 @@ const tabs = computed(() => {
   const list: { key: TabKey; label: string; icon: string; count: number; badge: string }[] = [
     { key: 'overview', label: 'Overview', icon: 'pi-info-circle', count: 0, badge: 'grey' },
     { key: 'reply', label: 'Defence', icon: 'pi-pencil', count: replies.value.length, badge: 'gold' },
+    { key: 'submissions', label: 'Submissions', icon: 'pi-file-edit', count: 0, badge: 'grey' },
     { key: 'filings', label: 'Objections & Appeal', icon: 'pi-flag', count: filings.value.length, badge: 'gold' },
   ];
   if (canDocs.value)
@@ -290,6 +292,7 @@ onMounted(loadAll);
               @filed="onFilingLodged"
               @retry="reloadSection('filings')"
             />
+            <SubmissionsPanel v-else-if="tab === 'submissions'" :appeal="appeal" :can-file="canReply" />
             <DocumentsPanel
               v-else-if="tab === 'documents' && canDocs"
               :appeal-id="id"
